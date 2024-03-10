@@ -1,3 +1,19 @@
 {
-    "cmake.sourceDirectory": "/home/bigdavid/桌面/Planning_and_Control/纵向控制算法/PID/src/PID_controller"
+    "cmake.sourceDirectory": "/home/bigdavid/桌面/Planning_and_Control/纵向控制算法/PID/src/PID_controller",
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "",
+        "/opt/carla-0.9.11/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg",
+        "/opt/carla-0.9.11/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg",
+        "/opt/carla-0.9.11/PythonAPI/carla/agents",
+        "/home/bigdavid/ocs2_ws/src/raisimLib/raisim/linux/lib"
+    ],
+    "python.analysis.extraPaths": [
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "",
+        "/opt/carla-0.9.11/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg",
+        "/opt/carla-0.9.11/PythonAPI/carla/dist/carla-0.9.11-py3.7-linux-x86_64.egg",
+        "/opt/carla-0.9.11/PythonAPI/carla/agents",
+        "/home/bigdavid/ocs2_ws/src/raisimLib/raisim/linux/lib"
+    ]
 }

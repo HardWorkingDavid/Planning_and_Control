@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <!--加载车模型-->
+    <!---->
+    <include file="$(find vehicle_description)/launch/estima_black.launch" />
+    <!--  -->
+    <node pkg="vehicle_state" type="vehicle_model_node" name="vehicle_simulation" output="screen" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find vehicle_state)/config/demo_car.rviz" required="true" />
+</launch>
