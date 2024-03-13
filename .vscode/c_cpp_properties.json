@@ -6,7 +6,12 @@
         "limitSymbolsToIncludedHeaders": false
       },
       "includePath": [
+        "/home/bigdavid/桌面/Planning_and_Control/devel/include/**",
         "/opt/ros/noetic/include/**",
+        "/home/bigdavid/桌面/Planning_and_Control/src/control/controller/include/**",
+        "/home/bigdavid/桌面/Planning_and_Control/src/planning/global_routing/include/**",
+        "/home/bigdavid/桌面/Planning_and_Control/src/planning/local_planning/include/**",
+        "/home/bigdavid/桌面/Planning_and_Control/src/vehicle_simulation/vehicle_state/include/**",
         "/usr/include/**"
       ],
       "name": "ROS",

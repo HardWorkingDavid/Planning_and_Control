@@ -6,7 +6,7 @@
 
 控制算法：
 
-纵向：双环PID
+纵向：PID:v->a->throttle
 
 横向：LQR、MPC、PurePursuit
 

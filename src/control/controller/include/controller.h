@@ -1,5 +1,8 @@
 #pragma once
 #include "../common/common.h"
+#include "../include/kinematic_model.h"
+#include "../include/lqr_controller.h"
+
 #include <vector>
 #include <iostream>
 #include <Eigen/Dense>
@@ -33,7 +36,17 @@ public:
     void update_controls(const double &frequency_update);
     // 初始化临时值
     void reset();
-    
+
+    /************************纵向控制*************************/
+    double cal_longitudinal(const double& dt, const double& speed, const double& desired_speed);
+
+    /************************横向控制*************************/
+    // 求解离散LQR
+    Eigen::MatrixXd cal_dlqr(const double& vx, const int& target_index);
+
+    // 计算方向转角
+    double cal_delta();
+
 
 public:
     /********************整车参数********************/
@@ -58,9 +71,14 @@ protected:
     double closet_distance_;              // 与最近匹配点的距离
     Eigen::MatrixXd Q_;                   // Q矩阵
     Eigen::MatrixXd R_;                   // R矩阵
-    double desired_speed_;                // 期望速度
+    
     std::unordered_map<std::string, double> tmp; // 临时存储上一循环周期的变量
 
+    double sum_pid_error_; // pid累计误差
+    double kp_;
+    double ki_;
+    double kd_;
+    double desired_speed_;                // 期望速度
 };
 
 } // namespace rviz_pnc

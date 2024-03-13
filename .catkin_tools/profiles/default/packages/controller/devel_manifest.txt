@@ -1,0 +1,5 @@
+control/controller
+/home/bigdavid/桌面/Planning_and_Control/devel/.private/controller/cmake.lock /home/bigdavid/桌面/Planning_and_Control/devel/./cmake.lock
+/home/bigdavid/桌面/Planning_and_Control/devel/.private/controller/share/controller/cmake/controllerConfig-version.cmake /home/bigdavid/桌面/Planning_and_Control/devel/share/controller/cmake/controllerConfig-version.cmake
+/home/bigdavid/桌面/Planning_and_Control/devel/.private/controller/share/controller/cmake/controllerConfig.cmake /home/bigdavid/桌面/Planning_and_Control/devel/share/controller/cmake/controllerConfig.cmake
+/home/bigdavid/桌面/Planning_and_Control/devel/.private/controller/lib/pkgconfig/controller.pc /home/bigdavid/桌面/Planning_and_Control/devel/lib/pkgconfig/controller.pc

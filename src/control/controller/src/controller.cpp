@@ -18,6 +18,17 @@ Controller::Controller() {
     this->lr_ = 2.947 - 1.265;
     this->Iz_ = pow(this->lf_, 2) * this->mass_front_ + pow(this->lr_, 2) * this->mass_rear_;
     this->max_front_wheel_ = 60.0;
+    /******************横向控制LQR参数****************/
+    this->closet_index_ = 0;
+    this->Q_ = Q_;
+    this->R_ = R_;
+
+    /************纵向PID控制参数**************/
+    this->sum_pid_error_ = 0.0; // PID累计误差
+    this->kp_ = kp_;
+    this->ki_ = ki_;
+    this->kd_ = kd_;
+    this->desired_speed_ = 0.0;
 }
 // 更新车辆当前状态
 void Controller::update_vehicle_state(const VehicleState& current_pose, const double &timestamp) {
@@ -109,9 +120,60 @@ void Controller::reset() {
     tmp["v_error"] = 0.0;
     tmp["alpha"] = 0.0;
     tmp["delta"] = 0.0;
+    tmp["brake"] = 0.0;
 }
 
-// 更新控制
+/****************横向控制LQR****************/
+// 求解k值
+Eigen::MatrixXd Controller::cal_dlqr(const double& vx, const int& target_index) {
+    double ref_yaw = this->waypoints_[target_index].heading;
+    
+    double ref_delta = atan2(wheel_base_ * this->waypoints_[target_index].kappa, 1);
+    Eigen::MatrixXd Ad(3, 3), Bd(3, 2);
+    // 离散化状态方程
+    KinematicModel model;
+    model.v = vx;
+    Ad = model.stateSpace(ref_delta, ref_yaw)[0];
+    Bd = model.stateSpace(ref_delta, ref_yaw)[1];
+    // 设置迭代次数1000 预设精度EPS 1.0e-4
+    LQR lqr(1000); 
+    // 求解Riccati方程
+    MatrixXd P = lqr.calRicatti(Ad, Bd, Q_, R_);
+
+    MatrixXd K = (R_ + Bd.transpose() * P * Bd).inverse() * Bd.transpose() * P * Ad;
+    return K;
+}
+// LQR_kinematics
+double Controller::cal_delta() {
+    double delta = 0.0;
+    int target_index = search_closest_index(this->current_pose_, this->waypoints_);
+    Matrix<double, 3, 1> error;
+    double heading_error = this->current_pose_.heading - this->waypoints_[target_index].heading;
+
+    error << this->current_pose_.x - this->waypoints_[target_index].x,
+             this->current_pose_.x - this->waypoints_[target_index].x,
+             normalize_angle(heading_error);
+    MatrixXd K = cal_dlqr(this->desired_speed_, target_index);
+    MatrixXd u = -K * error;
+    delta = u(1, 0) + atan2(this->waypoints_[target_index].kappa, 1);
+    if (isnan(delta))
+    {
+      delta = tmp["delta"];
+    }
+}
+
+/*****************纵向控制*********************/
+double Controller::cal_longitudinal(const double& dt, const double& speed, const double& desired_speed) {
+    double v_err = desired_speed - speed;
+    sum_pid_error_ += v_err * dt;
+    double throttle = v_err * this->kp_ + sum_pid_error_ * this->ki_ + (v_err - tmp["v_error"]) * this->kd_ / dt;
+    tmp["throttle"] = throttle;
+    tmp["v_error"] = v_err;
+    return throttle;
+}
+
+
+// 更新控制指令
 void Controller::update_controls(const double &frequency_update) {
     update_desired_speed();
     double throttle_output = 0;
@@ -122,8 +184,36 @@ void Controller::update_controls(const double &frequency_update) {
     {
       reset();
     } else {
-        
-    }
-}
+        if (waypoints_.size() > 1) {
+            double dt = 1 / frequency_update;
+            // 纵向控制
+            brake_output = 0.0;
+            throttle_output = cal_longitudinal(dt, this->current_pose_.velocity, this->desired_speed_);
+            // 横向控制
+            steer_output = cal_delta();
+            steer_output = normalize_angle(steer_output);
+            // 限制前轮最大转角[-60度～60度]
+            if (steer_output >= degree_to_rad(60.0)) steer_output = degree_to_rad(60.0);
+            else if (steer_output <= -degree_to_rad(60.0)) steer_output = -degree_to_rad(60.0);
+            } else {
+                throttle_output = tmp["throttle"];
+                steer_output = tmp["delta"];
+                brake_output = tmp["brake"];
+            }
 
+            if (this->desired_speed_ < 0.1) {
+                throttle_output = 0;
+                steer_output = 0;
+                brake_output = 1;
+            }
+            // 设置控制指令
+            set_throttle(throttle_output); //  (0 to 1)
+            set_steer(-steer_output);      // (-1 to 1)
+            set_brake(brake_output);       // (0 to 1)
+            // 存储上一个周期的值
+            tmp["v"] = this->current_pose_.velocity_x;
+            tmp["t"] = this->current_time_;
+    }
+    first_loop_ = false;
 }
+} // namespace rviz_pnc
